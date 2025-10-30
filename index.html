@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Ayurveda Prakriti 3D Assessment</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<!-- ✨ Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
+
+<style>
+body {
+  margin:0;
+  font-family: Poppins, sans-serif;
+  background: radial-gradient(circle at top, #0e0e23 0%, #000 100%);
+  color:white;
+  overflow-x:hidden;
+}
+
+h1 {
+  text-align:center;
+  padding:25px;
+  font-weight:600;
+  text-shadow:0 0 20px #4Df8ff;
+}
+
+.container {
+  max-width:900px;
+  margin:auto;
+  padding:20px;
+}
+
+/* 3D Card */
+.card3d {
+  background:rgba(255,255,255,0.08);
+  backdrop-filter:blur(25px);
+  padding:20px;
+  border-radius:15px;
+  margin-bottom:20px;
+  border:1px solid rgba(255,255,255,0.15);
+  transition:transform .3s, box-shadow .3s;
+  transform-style:preserve-3d;
+}
+
+.card3d:hover {
+  transform: perspective(800px) rotateX(4deg) rotateY(-4deg) scale(1.02);
+  box-shadow:0 0 25px rgba(0,200,255,0.4);
+}
+
+.option {
+  display:block;
+  margin:10px 0;
+  padding:12px;
+  border-radius:12px;
+  cursor:pointer;
+  background:rgba(255,255,255,0.09);
+  border:1px solid rgba(255,255,255,0.12);
+  transition:.25s;
+}
+
+.option:hover {
+  background:rgba(0,255,255,0.15);
+  box-shadow:0 0 15px rgba(0,255,255,0.4);
+  transform:scale(1.03);
+}
+
+input[type="radio"] {display:none;}
+
+input[type="radio"]:checked + label {
+  background:rgba(0,255,255,0.3);
+  border-color:aqua;
+  box-shadow:0 0 20px cyan;
+}
+
+/* 3D Button */
+button {
+  width:100%;
+  padding:15px;
+  margin-top:10px;
+  font-size:18px;
+  border-radius:10px;
+  border:none;
+  cursor:pointer;
+  background:linear-gradient(90deg,#00f7ff,#0066ff);
+  color:black;
+  font-weight:600;
+  transition:.3s;
+}
+
+button:hover {
+  transform:scale(1.05);
+  box-shadow:0 0 25px cyan;
+}
+
+/* Result Box */
+#resultBox {
+  margin-top:30px;
+  padding:20px;
+  background:rgba(255,255,255,0.1);
+  border:1px solid rgba(0,255,255,0.4);
+  border-radius:15px;
+  display:none;
+  animation:pop 0.5s forwards;
+}
+
+@keyframes pop {
+  0% {transform:scale(0.6) translateY(50px); opacity:0;}
+  100% {transform:scale(1) translateY(0); opacity:1;}
+}
+</style>
+</head>
+<body>
+
+<h1>🧘‍♂️ AyURVEDA PRAKRITI – 3D SELF TEST</h1>
+
+<div class="container" id="quiz"></div>
+
+<button onclick="submitQuiz()">✨ Reveal My Prakriti</button>
+
+<div id="resultBox"></div>
+
+<script>
+// Questions
+const questions = [
+{q:"Skin type", opts:{V:"Dry", P:"Oily", K:"Soft/Glowing"}},
+{q:"Body Build", opts:{V:"Thin", P:"Medium/Muscular", K:"Heavy"}},
+{q:"Hair", opts:{V:"Dry/Frizzy", P:"Fine/Oily", K:"Thick/Shiny"}},
+{q:"Energy Pattern", opts:{V:"Variable", P:"High & Intense", K:"Steady"}},
+{q:"Sleep", opts:{V:"Light", P:"Moderate", K:"Deep"}},
+{q:"Memory", opts:{V:"Quick/Forgetful", P:"Sharp", K:"Slow but Strong"}},
+{q:"Emotions", opts:{V:"Anxious", P:"Aggressive", K:"Calm"}},
+{q:"Weather Comfort", opts:{V:"Hates Cold", P:"Hates Heat", K:"Hates Damp"}},
+{q:"Eating tendency", opts:{V:"Irregular", P:"Strong hunger", K:"Slow eater"}},
+{q:"Stress reaction", opts:{V:"Fear", P:"Anger", K:"Withdrawal"}},
+];
+
+let quizDiv = document.getElementById("quiz");
+
+// build quiz
+questions.forEach((q,i)=>{
+  let html = `<div class='card3d'><b>${i+1}. ${q.q}</b>`;
+  Object.entries(q.opts).forEach(([d,label])=>{
+    html += `
+      <div>
+        <input type="radio" id="${i}_${d}" name="q${i}" value="${d}">
+        <label class="option" for="${i}_${d}">${label}</label>
+      </div>`;
+  });
+  html+= "</div>";
+  quizDiv.innerHTML += html;
+});
+
+// calculate result
+function submitQuiz(){
+  let score={V:0,P:0,K:0};
+  for(let i=0;i<questions.length;i++){
+    let ans=document.querySelector(`input[name="q${i}"]:checked`);
+    if(!ans){alert("⚠️ Please answer all questions");return;}
+    score[ans.value]++;
+  }
+
+  let max=Math.max(score.V,score.P,score.K);
+  let dominant=[];
+  for(let d in score){if(score[d]==max) dominant.push(d);}
+  const label={V:"Vata",P:"Pitta",K:"Kapha"};
+  let r=dominant.map(x=>label[x]).join(" + ");
+
+  const meaning={
+    V:"💨 VATA — Creative, fast thinking, dry skin, light body, active mind",
+    P:"🔥 PITTA — Sharp mind, strong digestion, warm body, focused & intense",
+    K:"🌊 KAPHA — Calm, strong stamina, cool body, slow metabolism, stable mood"
+  };
+
+  let txt = `<h2>Your Prakriti: <span style='color:cyan;'>${r}</span></h2>`;
+  dominant.forEach(x => txt += `<p>${meaning[x]}</p>`);
+  txt += `<br><small>Score → V:${score.V}, P:${score.P}, K:${score.K}</small>`;
+
+  let box = document.getElementById("resultBox");
+  box.innerHTML = txt;
+  box.style.display = "block";
+}
+</script>
+</body>
+</html>
